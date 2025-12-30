@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>陈老师问前程</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>陈老师问前程</h1>
+        </header>
+        
+        <main>
+            <!-- 问题选择区域 -->
+            <div class="question-section" id="questionSection">
+                <label for="questionSelect">请选择您要询问的问题：</label>
+                <select id="questionSelect">
+                    <option value="">请选择问题...</option>
+                    <option value="1">入职新公司是否有利</option>
+                    <option value="2">跟人合作是否有利</option>
+                    <option value="3">投资新生意是否有利</option>
+                    <option value="4">交新的女朋友是否合得来</option>
+                    <option value="5">父亲生病了，这个病能好吗？</option>
+                    <option value="6">去北方旅游是否顺利</option>
+                </select>
+                <button id="startBtn" class="btn-primary" disabled>开始算卦</button>
+            </div>
+
+            <!-- 起卦过程区域 -->
+            <div class="divination-section" id="divinationSection" style="display: none;">
+                <div class="progress-info">
+                    <p>第 <span id="currentStep">1</span> 次抛掷（共6次）</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <div class="coin-throw-area">
+                    <h3>抛掷三枚铜钱</h3>
+                    <div class="coins-display" id="coinsDisplay">
+                        <div class="coin coin-1"></div>
+                        <div class="coin coin-2"></div>
+                        <div class="coin coin-3"></div>
+                    </div>
+                    <button id="throwBtn" class="btn-primary">抛掷铜钱</button>
+                </div>
+
+                <div class="result-display" id="resultDisplay" style="display: none;">
+                    <div class="throw-result" id="throwResult"></div>
+                    <div class="yao-symbol" id="yaoSymbol"></div>
+                </div>
+
+                <div class="yao-history" id="yaoHistory"></div>
+            </div>
+
+            <!-- 卦象展示区域 -->
+            <div class="gua-display-section" id="guaDisplaySection" style="display: none;">
+                <h2>卦象结果</h2>
+                
+                <div class="question-info">
+                    <p><strong>您的问题：</strong><span id="selectedQuestion"></span></p>
+                </div>
+
+                <div class="gua-container">
+                    <div class="gua-box">
+                        <h3>初始卦</h3>
+                        <div class="gua-diagram" id="initialGua"></div>
+                        <div class="gua-name" id="initialGuaName"></div>
+                        <div class="gua-info" id="initialGuaInfo"></div>
+                        <div class="gua-details" id="initialGuaDetails"></div>
+                    </div>
+
+                    <div class="gua-box">
+                        <h3>新卦（变卦）</h3>
+                        <div class="gua-diagram" id="newGua"></div>
+                        <div class="gua-name" id="newGuaName"></div>
+                        <div class="gua-info" id="newGuaInfo"></div>
+                        <div class="gua-details" id="newGuaDetails"></div>
+                    </div>
+                </div>
+
+                <button id="resetBtn" class="btn-secondary">重新算卦</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
