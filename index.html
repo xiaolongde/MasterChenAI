@@ -13,10 +13,16 @@
         </header>
         
         <main>
-            <!-- API测试区域 -->
-            <div class="api-test-section" id="apiTestSection">
-                <button id="testApiBtn" class="btn-test" onclick="testGeminiAPI()">🔗 测试AI连接</button>
-                <span id="apiTestResult" style="margin-left: 15px;"></span>
+            <!-- API配置区域 -->
+            <div class="api-config-section" id="apiConfigSection">
+                <div class="api-key-input">
+                    <label for="apiKeyInput">Gemini API Key：</label>
+                    <input type="password" id="apiKeyInput" placeholder="输入你的 API Key（sk-...）" />
+                    <button id="saveApiKeyBtn" class="btn-small" onclick="saveApiKey()">保存</button>
+                    <button id="testApiBtn" class="btn-test" onclick="testGeminiAPI()">🔗 测试连接</button>
+                    <span id="apiTestResult" style="margin-left: 10px;"></span>
+                </div>
+                <p class="api-hint">💡 <a href="https://aistudio.google.com/app/apikey" target="_blank">点此获取免费 Gemini API Key</a>（需科学上网）</p>
             </div>
 
             <!-- 问题选择区域 -->
@@ -106,6 +112,10 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // 页面加载时读取保存的API Key
+        loadApiKey();
+    </script>
 </body>
 </html>
 

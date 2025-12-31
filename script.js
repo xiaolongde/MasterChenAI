@@ -999,12 +999,35 @@ if (copyPromptBtn) {
 }
 
 // Gemini API配置
-const GEMINI_API_KEY = 'AIzaSyApswS97-xs0xbLaBpws8vQ4f0jbxwQ0kg';
+let GEMINI_API_KEY = ''; // 用户自行输入，不再硬编码
 // 使用 gemini-2.5-flash（更快更稳定）
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 // 使用本地代理（设为false直接访问Google API）
 const USE_LOCAL_PROXY = false;
 const LOCAL_PROXY_URL = '/api/gemini';
+
+// 从localStorage加载API Key
+function loadApiKey() {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+        GEMINI_API_KEY = savedKey;
+        const input = document.getElementById('apiKeyInput');
+        if (input) input.value = savedKey;
+    }
+}
+
+// 保存API Key到localStorage
+function saveApiKey() {
+    const input = document.getElementById('apiKeyInput');
+    const key = input.value.trim();
+    if (key) {
+        GEMINI_API_KEY = key;
+        localStorage.setItem('gemini_api_key', key);
+        alert('API Key 已保存！');
+    } else {
+        alert('请输入有效的 API Key');
+    }
+}
 
 // 简单API测试函数
 async function testGeminiAPI() {

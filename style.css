@@ -38,13 +38,71 @@ main {
     padding: 40px;
 }
 
-.api-test-section {
+/* API配置区域 */
+.api-config-section {
     text-align: center;
-    padding: 15px;
+    padding: 20px;
     margin-bottom: 20px;
     background: #f8f9fa;
     border-radius: 10px;
     border: 1px dashed #ddd;
+}
+
+.api-key-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.api-key-input label {
+    font-weight: bold;
+    color: #555;
+}
+
+.api-key-input input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 280px;
+    font-size: 14px;
+}
+
+.api-key-input input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+}
+
+.btn-small {
+    padding: 8px 15px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-small:hover {
+    background: #5a6fd6;
+}
+
+.api-hint {
+    font-size: 13px;
+    color: #888;
+    margin-top: 10px;
+}
+
+.api-hint a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.api-hint a:hover {
+    text-decoration: underline;
 }
 
 .question-section {
