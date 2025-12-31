@@ -13,6 +13,12 @@
         </header>
         
         <main>
+            <!-- API测试区域 -->
+            <div class="api-test-section" id="apiTestSection">
+                <button id="testApiBtn" class="btn-test" onclick="testGeminiAPI()">🔗 测试AI连接</button>
+                <span id="apiTestResult" style="margin-left: 15px;"></span>
+            </div>
+
             <!-- 问题选择区域 -->
             <div class="question-section" id="questionSection">
                 <label for="questionSelect">请选择您要询问的问题：</label>
@@ -84,7 +90,14 @@
                 <div class="ai-prompt-section">
                     <h3>AI解卦提示</h3>
                     <div class="ai-prompt-box" id="aiPromptBox"></div>
-                    <button id="copyPromptBtn" class="btn-copy">复制提示词</button>
+                    <div class="ai-btn-group">
+                        <button id="copyPromptBtn" class="btn-copy">复制提示词</button>
+                        <button id="askGeminiBtn" class="btn-ai">AI解卦</button>
+                    </div>
+                    <div class="ai-response-section" id="aiResponseSection" style="display:none;">
+                        <h4>🔮 AI解卦结果</h4>
+                        <div class="ai-response-box" id="aiResponseBox"></div>
+                    </div>
                 </div>
 
                 <button id="resetBtn" class="btn-reset">重新算卦</button>

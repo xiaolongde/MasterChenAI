@@ -1,24 +1,107 @@
-// 农历转换（简化版）
+// 天干地支计算
+const TIAN_GAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+const DI_ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+
+// 计算日干支
+function getDayGanZhi(date) {
+    // 以1900年1月1日（甲戌日）为基准
+    // 甲=0, 戌=10
+    const baseDate = new Date(1900, 0, 1);
+    const diffDays = Math.floor((date - baseDate) / (24 * 60 * 60 * 1000));
+    const ganIndex = ((diffDays % 10) + 10) % 10;
+    const zhiIndex = ((diffDays + 10) % 12 + 12) % 12; // 戌=10
+    return TIAN_GAN[ganIndex] + DI_ZHI[zhiIndex];
+}
+
+// 根据节气获取月份地支索引（0=子月，1=丑月，2=寅月...）
+function getMonthZhiByJieqi(year, month, day) {
+    // 简化的节气交节日期表（每月的节气大约在这一天）
+    // 实际节气时间每年略有不同，这里用近似值
+    const jieqiDays = {
+        1: 5,   // 小寒，进入丑月
+        2: 4,   // 立春，进入寅月
+        3: 6,   // 惊蛰，进入卯月
+        4: 5,   // 清明，进入辰月
+        5: 6,   // 立夏，进入巳月
+        6: 6,   // 芒种，进入午月
+        7: 7,   // 小暑，进入未月
+        8: 8,   // 立秋，进入申月
+        9: 8,   // 白露，进入酉月
+        10: 8,  // 寒露，进入戌月
+        11: 7,  // 立冬，进入亥月
+        12: 7   // 大雪，进入子月
+    };
+    
+    // 月份对应的地支索引（交节后）
+    const monthToZhi = {
+        1: 1,   // 小寒后丑月
+        2: 2,   // 立春后寅月
+        3: 3,   // 惊蛰后卯月
+        4: 4,   // 清明后辰月
+        5: 5,   // 立夏后巳月
+        6: 6,   // 芒种后午月
+        7: 7,   // 小暑后未月
+        8: 8,   // 立秋后申月
+        9: 9,   // 白露后酉月
+        10: 10, // 寒露后戌月
+        11: 11, // 立冬后亥月
+        12: 0   // 大雪后子月
+    };
+    
+    // 判断是否已过当月节气
+    if (day >= jieqiDays[month]) {
+        return monthToZhi[month];
+    } else {
+        // 未过节气，属于上一个月
+        const prevMonth = month === 1 ? 12 : month - 1;
+        return monthToZhi[prevMonth];
+    }
+}
+
+// 计算月干支
+function getMonthGanZhi(year, month, day) {
+    // 获取月份地支
+    const monthZhiIndex = getMonthZhiByJieqi(year, month, day);
+    
+    // 根据年干推算月干（五虎遁元）
+    // 甲己年丙寅起，乙庚年戊寅起，丙辛年庚寅起，丁壬年壬寅起，戊癸年甲寅起
+    // 需要用立春后的年份来确定年干
+    let yearForGan = year;
+    // 如果在立春前，年干用上一年
+    if (month < 2 || (month === 2 && day < 4)) {
+        yearForGan = year - 1;
+    }
+    
+    const yearGanIndex = ((yearForGan - 4) % 10 + 10) % 10; // 公元4年是甲子年
+    
+    // 寅月的天干起点
+    const yinMonthGanStart = [2, 4, 6, 8, 0, 2, 4, 6, 8, 0]; // 甲己丙起，乙庚戊起...
+    
+    // 从寅月(index=2)推算到当前月份
+    // 月地支：子=0,丑=1,寅=2,卯=3...
+    // 寅月是起点，往后推
+    let monthOffset = monthZhiIndex - 2;
+    if (monthOffset < 0) monthOffset += 12;
+    
+    const monthGanIndex = (yinMonthGanStart[yearGanIndex] + monthOffset) % 10;
+    
+    return TIAN_GAN[monthGanIndex] + DI_ZHI[monthZhiIndex];
+}
+
+// 获取干支日期（返回月干支和日干支）
 function getLunarDate() {
     const now = new Date();
-    // 简化的农历月份和日期数组（实际应用需要更精确的农历算法）
-    const lunarMonths = ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊'];
-    const lunarDays = ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
-                       '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
-                       '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
-    
-    // 使用简化计算（实际应用中应使用专业农历库）
-    // 这里返回一个近似值，以公历日期为基础偏移
-    const month = now.getMonth();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // 1-12
     const day = now.getDate();
     
-    // 简化处理：农历通常比公历晚约1个月
-    let lunarMonth = month; // 简化处理
-    let lunarDay = day - 1;
-    if (lunarDay < 0) lunarDay = 0;
-    if (lunarDay > 29) lunarDay = 29;
+    // 获取日干支
+    const dayGanZhi = getDayGanZhi(now);
     
-    return `${lunarMonths[lunarMonth]}月${lunarDays[lunarDay]}`;
+    // 获取月干支
+    const monthGanZhi = getMonthGanZhi(year, month, day);
+    
+    return `${monthGanZhi}月${dayGanZhi}日`;
 }
 
 // 增删卜易地支配置表（按八宫排列）
@@ -915,6 +998,203 @@ if (copyPromptBtn) {
     });
 }
 
+// Gemini API配置
+const GEMINI_API_KEY = 'AIzaSyApswS97-xs0xbLaBpws8vQ4f0jbxwQ0kg';
+// 使用 gemini-2.5-flash（更快更稳定）
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+// 使用本地代理（设为false直接访问Google API）
+const USE_LOCAL_PROXY = false;
+const LOCAL_PROXY_URL = '/api/gemini';
+
+// 简单API测试函数
+async function testGeminiAPI() {
+    const btn = document.getElementById('testApiBtn');
+    const result = document.getElementById('apiTestResult');
+    
+    btn.textContent = '⏳ 测试中...';
+    btn.disabled = true;
+    result.innerHTML = '<span style="color:#666;">正在连接...</span>';
+    
+    console.log('=== 开始API测试 ===');
+    console.log('API URL:', GEMINI_API_URL);
+    
+    try {
+        const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: 'hi' }] }]
+            })
+        });
+        
+        console.log('响应状态:', response.status);
+        
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error?.message || `HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('响应数据:', data);
+        
+        result.innerHTML = '<span style="color:green; font-weight:bold;">✅ 连接成功！</span>';
+        
+    } catch (error) {
+        console.error('API测试失败:', error);
+        result.innerHTML = `<span style="color:red;">❌ 失败: ${error.message}</span>`;
+    } finally {
+        btn.textContent = '🔗 测试AI连接';
+        btn.disabled = false;
+    }
+}
+
+// AI解卦按钮事件
+const askGeminiBtn = document.getElementById('askGeminiBtn');
+if (askGeminiBtn) {
+    askGeminiBtn.addEventListener('click', async function() {
+        console.log('=== AI解卦按钮点击 ===');
+        const aiPromptBox = document.getElementById('aiPromptBox');
+        const aiResponseSection = document.getElementById('aiResponseSection');
+        const aiResponseBox = document.getElementById('aiResponseBox');
+        
+        console.log('aiPromptBox:', aiPromptBox);
+        console.log('aiPromptBox内容:', aiPromptBox?.textContent);
+        
+        if (!aiPromptBox || !aiPromptBox.textContent) {
+            alert('请先完成起卦');
+            return;
+        }
+        
+        // 显示加载状态
+        askGeminiBtn.disabled = true;
+        askGeminiBtn.textContent = '解卦中...';
+        aiResponseSection.style.display = 'block';
+        aiResponseBox.innerHTML = '<div class="ai-loading">正在请求AI解卦，请稍候</div>';
+        
+        console.log('开始调用Gemini API...');
+        
+        try {
+            const response = await callGeminiAPI(aiPromptBox.textContent);
+            console.log('API调用成功，响应:', response);
+            aiResponseBox.textContent = response;
+        } catch (error) {
+            console.error('Gemini API调用失败:', error);
+            console.error('错误详情:', error.stack);
+            aiResponseBox.innerHTML = `<div style="color: red;">AI解卦失败: ${error.message}</div>`;
+        } finally {
+            askGeminiBtn.disabled = false;
+            askGeminiBtn.textContent = 'AI解卦';
+        }
+    });
+}
+
+// 调用Gemini API
+async function callGeminiAPI(prompt) {
+    console.log('=== callGeminiAPI 开始 ===');
+    console.log('API URL:', GEMINI_API_URL);
+    console.log('API Key:', GEMINI_API_KEY ? '已设置(前8位:' + GEMINI_API_KEY.substring(0, 8) + '...)' : '未设置');
+    console.log('提示词长度:', prompt.length);
+    
+    // 详细的系统提示
+    const systemPrompt = `你是一位精通增删卜易的卦象分析大师。请根据用户提供的卦象信息，按照增删卜易的方法进行详细解读。分析要点包括：
+1. 卦象整体分析
+2. 用神分析（根据所问事项确定用神）
+3. 动爻影响分析
+4. 六亲关系分析
+5. 吉凶判断及建议
+
+请用通俗易懂的语言解释，让普通人也能理解。`;
+
+    const requestBody = {
+        contents: [{
+            parts: [{
+                text: systemPrompt + '\n\n' + prompt
+            }]
+        }],
+        generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192
+        }
+    };
+    
+    console.log('请求体:', JSON.stringify(requestBody, null, 2));
+    
+    // 创建AbortController用于超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        console.log('请求超时，正在中止...');
+        controller.abort();
+    }, 120000); // 120秒超时
+    
+    console.log('正在发送fetch请求...');
+    console.log('使用本地代理:', USE_LOCAL_PROXY);
+    
+    try {
+        let response;
+        
+        if (USE_LOCAL_PROXY) {
+            // 使用本地代理
+            response = await fetch(LOCAL_PROXY_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    apiKey: GEMINI_API_KEY,
+                    body: requestBody
+                }),
+                signal: controller.signal
+            });
+        } else {
+            // 直接调用Google API
+            response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody),
+                signal: controller.signal
+            });
+        }
+        
+        console.log('fetch响应状态:', response.status, response.statusText);
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Gemini API响应:', JSON.stringify(data, null, 2));
+        
+        if (data.candidates && data.candidates.length > 0) {
+            const candidate = data.candidates[0];
+            if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                // 提取text字段，忽略thoughtSignature
+                const textPart = candidate.content.parts.find(part => part.text && !part.thoughtSignature);
+                if (textPart) {
+                    return textPart.text;
+                }
+                // 如果所有parts都有thoughtSignature，取第一个的text
+                const firstPart = candidate.content.parts[0];
+                if (firstPart && firstPart.text) {
+                    return firstPart.text;
+                }
+            }
+            throw new Error('AI返回数据中未找到文本内容');
+        } else {
+            throw new Error('AI返回数据格式异常: ' + JSON.stringify(data));
+        }
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error('请求超时，请检查网络连接后重试');
+        }
+        throw error;
+    }
+}
+
 // 开始算卦
 function startDivination() {
     currentStep = 0;
@@ -1190,6 +1470,16 @@ function generateAIPrompt(initialGuaInfo, newGuaInfo, yaos, movingYaoPositions) 
     aiPromptBox.style.display = 'block';
     if (copyPromptBtn) {
         copyPromptBtn.style.display = 'inline-block';
+    }
+    // 显示AI解卦按钮
+    const askGeminiBtn = document.getElementById('askGeminiBtn');
+    if (askGeminiBtn) {
+        askGeminiBtn.style.display = 'inline-block';
+    }
+    // 隐藏之前的AI响应
+    const aiResponseSection = document.getElementById('aiResponseSection');
+    if (aiResponseSection) {
+        aiResponseSection.style.display = 'none';
     }
 }
 
