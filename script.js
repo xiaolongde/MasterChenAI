@@ -1041,8 +1041,135 @@ function updateKeyStatus(hasKey) {
     }
 }
 
+// ==================== 解卦记录模块 ====================
+
+// 从localStorage加载历史记录
+function loadHistory() {
+    const history = localStorage.getItem('divination_history');
+    return history ? JSON.parse(history) : [];
+}
+
+// 保存历史记录到localStorage
+function saveHistory(records) {
+    localStorage.setItem('divination_history', JSON.stringify(records));
+}
+
+// 添加一条解卦记录
+function addHistoryRecord(question, guaInfo, prompt, response) {
+    const records = loadHistory();
+    const record = {
+        id: Date.now(),
+        question: question,
+        guaInfo: guaInfo, // 包含本卦、变卦名称等
+        prompt: prompt,
+        response: response,
+        time: new Date().toLocaleString('zh-CN')
+    };
+    records.unshift(record); // 新记录放在最前面
+    
+    // 最多保留50条记录
+    if (records.length > 50) {
+        records.pop();
+    }
+    
+    saveHistory(records);
+    renderHistoryList();
+}
+
+// 渲染历史记录列表
+function renderHistoryList() {
+    const listEl = document.getElementById('historyList');
+    if (!listEl) return;
+    
+    const records = loadHistory();
+    
+    if (records.length === 0) {
+        listEl.innerHTML = '<div class="history-empty">暂无解卦记录</div>';
+        return;
+    }
+    
+    listEl.innerHTML = records.map(record => `
+        <div class="history-item" onclick="showHistoryDetail(${record.id})">
+            <div class="history-item-title">${record.question}</div>
+            <div class="history-item-time">${record.time}</div>
+            <div class="history-item-gua">${record.guaInfo || ''}</div>
+        </div>
+    `).join('');
+}
+
+// 展开/收起历史记录
+function toggleHistory() {
+    const listEl = document.getElementById('historyList');
+    const toggleEl = document.getElementById('historyToggle');
+    
+    if (listEl.style.display === 'none') {
+        listEl.style.display = 'block';
+        toggleEl.classList.add('open');
+        renderHistoryList();
+    } else {
+        listEl.style.display = 'none';
+        toggleEl.classList.remove('open');
+    }
+}
+
+// 显示历史记录详情
+function showHistoryDetail(id) {
+    const records = loadHistory();
+    const record = records.find(r => r.id === id);
+    if (!record) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'history-detail-modal';
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+    
+    modal.innerHTML = `
+        <div class="history-detail-content">
+            <div class="history-detail-header">
+                <h3>${record.question}</h3>
+                <button class="history-detail-close" onclick="this.closest('.history-detail-modal').remove()">×</button>
+            </div>
+            <div class="history-detail-body">
+                <div class="history-detail-section">
+                    <h4>📅 时间</h4>
+                    <p>${record.time}</p>
+                </div>
+                <div class="history-detail-section">
+                    <h4>🎴 卦象</h4>
+                    <p>${record.guaInfo || '无'}</p>
+                </div>
+                <div class="history-detail-section">
+                    <h4>🔮 AI解卦结果</h4>
+                    <pre>${record.response}</pre>
+                </div>
+                <button class="history-delete-btn" onclick="deleteHistoryRecord(${record.id})">🗑️ 删除此记录</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// 删除历史记录
+function deleteHistoryRecord(id) {
+    if (!confirm('确定要删除这条记录吗？')) return;
+    
+    let records = loadHistory();
+    records = records.filter(r => r.id !== id);
+    saveHistory(records);
+    
+    // 关闭弹窗并刷新列表
+    const modal = document.querySelector('.history-detail-modal');
+    if (modal) modal.remove();
+    renderHistoryList();
+}
+
 // 页面加载时初始化
-document.addEventListener('DOMContentLoaded', loadApiKey);
+document.addEventListener('DOMContentLoaded', function() {
+    loadApiKey();
+    renderHistoryList();
+});
 
 // 简单API测试函数
 async function testGeminiAPI() {
@@ -1121,6 +1248,30 @@ if (askGeminiBtn) {
             const response = await callGeminiAPI(aiPromptBox.textContent);
             console.log('API调用成功，响应:', response);
             aiResponseBox.textContent = response;
+            
+            // 保存解卦记录
+            const questionEl = document.getElementById('selectedQuestion');
+            const initialGuaNameEl = document.getElementById('initialGuaName');
+            const newGuaNameEl = document.getElementById('newGuaName');
+            
+            const question = questionEl ? questionEl.textContent : '未知问题';
+            const initialGuaName = initialGuaNameEl ? initialGuaNameEl.textContent : '';
+            const newGuaName = newGuaNameEl ? newGuaNameEl.textContent : '';
+            
+            // 获取动爻信息
+            const yaoNames = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻'];
+            let movingYaoInfo = [];
+            for (let i = 0; i < yaos.length; i++) {
+                if (yaos[i].isMoving) {
+                    movingYaoInfo.push(yaoNames[i]);
+                }
+            }
+            const movingStr = movingYaoInfo.length > 0 ? `动爻：${movingYaoInfo.join('、')}` : '无动爻';
+            
+            const guaInfo = `本卦：${initialGuaName} → 变卦：${newGuaName}｜${movingStr}`;
+            
+            addHistoryRecord(question, guaInfo, aiPromptBox.textContent, response);
+            
         } catch (error) {
             console.error('Gemini API调用失败:', error);
             console.error('错误详情:', error.stack);

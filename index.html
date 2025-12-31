@@ -28,6 +28,15 @@
                 <p class="api-hint">💡 <a href="https://aistudio.google.com/app/apikey" target="_blank">点击获取免费 Gemini API Key</a></p>
             </div>
 
+            <!-- 解卦历史记录 -->
+            <div class="history-section" id="historySection">
+                <div class="history-header" onclick="toggleHistory()">
+                    <span>📜 解卦记录</span>
+                    <span class="history-toggle" id="historyToggle">▼</span>
+                </div>
+                <div class="history-list" id="historyList" style="display:none;"></div>
+            </div>
+
             <!-- 问题选择区域 -->
             <div class="question-section" id="questionSection">
                 <label for="questionSelect">请选择您要询问的问题：</label>
