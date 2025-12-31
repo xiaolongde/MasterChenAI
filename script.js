@@ -1001,6 +1001,8 @@ if (copyPromptBtn) {
 // Gemini API配置（私有仓库，直接配置Key）
 const GEMINI_API_KEY = 'AIzaSyApswS97-xs0xbLaBpws8vQ4f0jbxwQ0kg';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const USE_LOCAL_PROXY = false; // 直接访问Google API
+const LOCAL_PROXY_URL = '/api/gemini'; // 本地代理地址（如果需要）
 
 // 简单API测试函数
 async function testGeminiAPI() {
