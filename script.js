@@ -1048,22 +1048,22 @@ function showGuaResult() {
     let initialGuaInfo = guaData[initialGuaCode] || { name: '未知卦', info: `卦象信息待补充（卦码：${initialGuaCode}）`, palace: '未知宫' };
     // 使用增删卜易标准配置修正卦象信息
     initialGuaInfo = getCorrectGuaInfo(initialGuaCode, initialGuaInfo);
-    document.getElementById('initialGuaName').textContent = initialGuaInfo.name;
+    document.getElementById('initialGuaName').textContent = `${initialGuaInfo.name}（${initialGuaInfo.wuxing}）`;
     document.getElementById('initialGuaInfo').textContent = initialGuaInfo.info;
     
     // 显示初始卦的详细信息（六亲、五行、地支、世/应爻）
-    displayGuaDetails('initialGuaDetails', initialGuaCode, initialGuaInfo, yaos);
+    displayGuaDetails('initialGuaDetails', initialGuaCode, initialGuaInfo, yaos, false, null);
     
     // 显示新卦
     displayGua('newGua', newGuaCode, yaos, true);
     let newGuaInfo = guaData[newGuaCode] || { name: '未知卦', info: `卦象信息待补充（卦码：${newGuaCode}）`, palace: '未知宫' };
     // 使用增删卜易标准配置修正卦象信息
     newGuaInfo = getCorrectGuaInfo(newGuaCode, newGuaInfo);
-    document.getElementById('newGuaName').textContent = newGuaInfo.name;
+    document.getElementById('newGuaName').textContent = `${newGuaInfo.name}（${initialGuaInfo.wuxing}）`;
     document.getElementById('newGuaInfo').textContent = newGuaInfo.info;
     
-    // 显示新卦的详细信息
-    displayGuaDetails('newGuaDetails', newGuaCode, newGuaInfo, yaos, true);
+    // 显示新卦的详细信息（变卦的六亲按本卦宫位五行计算）
+    displayGuaDetails('newGuaDetails', newGuaCode, newGuaInfo, yaos, true, initialGuaInfo.wuxing);
     
     // 调试信息（可在控制台查看）
     console.log('=== 卦象生成详情 ===');
@@ -1155,7 +1155,8 @@ function displayGua(elementId, guaCode, yaos, isNewGua = false) {
 }
 
 // 显示卦象详细信息（六亲+地支+五行+世/应）
-function displayGuaDetails(elementId, guaCode, guaInfo, yaos, isNewGua = false) {
+// initialPalaceWuxing: 变卦时传入本卦的宫位五行，用于计算变卦的六亲
+function displayGuaDetails(elementId, guaCode, guaInfo, yaos, isNewGua = false, initialPalaceWuxing = null) {
     const detailsDiv = document.getElementById(elementId);
     if (!detailsDiv) return;
     
@@ -1168,13 +1169,15 @@ function displayGuaDetails(elementId, guaCode, guaInfo, yaos, isNewGua = false) 
     }
     
     // 计算六亲关系
+    // 变卦时使用本卦的宫位五行来计算六亲
+    const palaceWuxingForLiuqin = isNewGua && initialPalaceWuxing ? initialPalaceWuxing : guaInfo.wuxing;
     let liuqinArray = [];
-    if (guaInfo.liuqin && Array.isArray(guaInfo.liuqin)) {
-        // 如果已有六亲数组，直接使用
+    if (!isNewGua && guaInfo.liuqin && Array.isArray(guaInfo.liuqin)) {
+        // 本卦：如果已有六亲数组，直接使用
         liuqinArray = guaInfo.liuqin;
-    } else if (guaInfo.wuxing && guaInfo.wuxingYao) {
-        // 否则自动计算六亲关系
-        liuqinArray = calculateAllLiuqin(guaInfo.wuxing, guaInfo.wuxingYao);
+    } else if (palaceWuxingForLiuqin && guaInfo.wuxingYao) {
+        // 变卦或需要计算：用本卦宫位五行计算六亲关系
+        liuqinArray = calculateAllLiuqin(palaceWuxingForLiuqin, guaInfo.wuxingYao);
     } else {
         // 使用默认值
         liuqinArray = ['', '', '', '', '', ''];
@@ -1207,11 +1210,20 @@ function displayGuaDetails(elementId, guaCode, guaInfo, yaos, isNewGua = false) 
         const isYing = (guaInfo.ying - 1) === yaoIndex ? ' —— 应' : '';
         const yaoPosition = yaoNames[yaoIndex] + '爻';
         
+        // 检查是否为动爻
+        const isMovingYao = yaos && yaos[yaoIndex] && yaos[yaoIndex].isMoving;
+        
         // 格式：爻位：六亲+地支+五行+世/应
         yaoItem.textContent = `${yaoPosition}：${liuqin}${dizhi}${wuxing}${isShi}${isYing}`;
         
-        // 如果是世爻或应爻，加粗显示
-        if (isShi || isYing) {
+        // 动爻标红显示
+        if (isMovingYao) {
+            yaoItem.style.color = '#ff4444';
+            yaoItem.style.fontWeight = 'bold';
+            yaoItem.style.backgroundColor = '#ffebee';
+        }
+        // 如果是世爻或应爻（非动爻），用蓝色加粗显示
+        else if (isShi || isYing) {
             yaoItem.style.fontWeight = 'bold';
             yaoItem.style.color = '#667eea';
             yaoItem.style.backgroundColor = '#e3f2fd';
@@ -1226,14 +1238,19 @@ function displayGuaDetails(elementId, guaCode, guaInfo, yaos, isNewGua = false) 
 function reset() {
     currentStep = 0;
     yaos = [];
+    selectedQuestion = '';
     questionSection.style.display = 'block';
     divinationSection.style.display = 'none';
     guaDisplaySection.style.display = 'none';
     questionSelect.value = '';
     startBtn.disabled = true;
+    throwBtn.disabled = false;
     resultDisplay.style.display = 'none';
+    progressFill.style.width = '0%';
+    currentStepSpan.textContent = '1';
     coinsDisplay.querySelectorAll('.coin').forEach(coin => {
         coin.classList.remove('show-result');
+        coin.classList.remove('flipping');
         coin.textContent = '';
     });
 }
