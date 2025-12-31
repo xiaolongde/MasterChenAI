@@ -38,14 +38,63 @@ main {
     padding: 40px;
 }
 
-/* API测试区域 */
-.api-test-section {
-    text-align: center;
-    padding: 15px;
+/* API配置区域 */
+.api-config-section {
+    padding: 20px;
     margin-bottom: 20px;
     background: #f8f9fa;
     border-radius: 10px;
     border: 1px dashed #ddd;
+}
+
+.api-key-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.api-key-row label {
+    font-weight: bold;
+    color: #555;
+}
+
+.api-key-row input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 260px;
+    font-size: 14px;
+}
+
+.api-key-row input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-small {
+    padding: 8px 15px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-small:hover {
+    background: #5a6fd6;
+}
+
+.api-hint {
+    font-size: 13px;
+    color: #888;
+    margin: 10px 0 0 0;
+}
+
+.api-hint a {
+    color: #667eea;
 }
 
 .question-section {

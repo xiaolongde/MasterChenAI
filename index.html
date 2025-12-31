@@ -13,10 +13,19 @@
         </header>
         
         <main>
-            <!-- API测试区域（简化版） -->
-            <div class="api-test-section" id="apiTestSection">
-                <button id="testApiBtn" class="btn-test" onclick="testGeminiAPI()">🔗 测试AI连接</button>
-                <span id="apiTestResult" style="margin-left: 15px;"></span>
+            <!-- API配置区域 -->
+            <div class="api-config-section" id="apiConfigSection">
+                <div class="api-key-row">
+                    <label>🔑 API Key：</label>
+                    <input type="password" id="apiKeyInput" placeholder="输入 Gemini API Key" />
+                    <button class="btn-small" onclick="saveApiKey()">保存</button>
+                    <span id="keyStatus"><span style="color:orange;">未配置</span></span>
+                </div>
+                <div class="api-key-row">
+                    <button id="testApiBtn" class="btn-test" onclick="testGeminiAPI()">🔗 测试连接</button>
+                    <span id="apiTestResult"></span>
+                </div>
+                <p class="api-hint">💡 <a href="https://aistudio.google.com/app/apikey" target="_blank">点击获取免费 Gemini API Key</a></p>
             </div>
 
             <!-- 问题选择区域 -->

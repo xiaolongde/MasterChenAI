@@ -998,16 +998,62 @@ if (copyPromptBtn) {
     });
 }
 
-// Gemini API配置（私有仓库，直接配置Key）
-const GEMINI_API_KEY = 'AIzaSyApswS97-xs0xbLaBpws8vQ4f0jbxwQ0kg';
+// Gemini API配置
+let GEMINI_API_KEY = ''; // 用户手动输入
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-const USE_LOCAL_PROXY = false; // 直接访问Google API
-const LOCAL_PROXY_URL = '/api/gemini'; // 本地代理地址（如果需要）
+const USE_LOCAL_PROXY = false;
+const LOCAL_PROXY_URL = '/api/gemini';
+
+// 从localStorage加载API Key
+function loadApiKey() {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+        GEMINI_API_KEY = savedKey;
+        const input = document.getElementById('apiKeyInput');
+        if (input) {
+            input.value = savedKey;
+            updateKeyStatus(true);
+        }
+    }
+}
+
+// 保存API Key
+function saveApiKey() {
+    const input = document.getElementById('apiKeyInput');
+    const key = input.value.trim();
+    if (key) {
+        GEMINI_API_KEY = key;
+        localStorage.setItem('gemini_api_key', key);
+        updateKeyStatus(true);
+        alert('API Key 已保存！');
+    } else {
+        alert('请输入有效的 API Key');
+    }
+}
+
+// 更新密钥状态显示
+function updateKeyStatus(hasKey) {
+    const status = document.getElementById('keyStatus');
+    if (status) {
+        status.innerHTML = hasKey 
+            ? '<span style="color:green;">✓ 已配置</span>' 
+            : '<span style="color:orange;">未配置</span>';
+    }
+}
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', loadApiKey);
 
 // 简单API测试函数
 async function testGeminiAPI() {
     const btn = document.getElementById('testApiBtn');
     const result = document.getElementById('apiTestResult');
+    
+    // 检查 API Key 是否已配置
+    if (!GEMINI_API_KEY) {
+        result.innerHTML = '<span style="color:red;">❌ 请先输入并保存 API Key</span>';
+        return;
+    }
     
     btn.textContent = '⏳ 测试中...';
     btn.disabled = true;
@@ -1089,8 +1135,14 @@ if (askGeminiBtn) {
 // 调用Gemini API
 async function callGeminiAPI(prompt) {
     console.log('=== callGeminiAPI 开始 ===');
+    
+    // 检查 API Key
+    if (!GEMINI_API_KEY) {
+        throw new Error('请先输入并保存 API Key');
+    }
+    
     console.log('API URL:', GEMINI_API_URL);
-    console.log('API Key:', GEMINI_API_KEY ? '已设置(前8位:' + GEMINI_API_KEY.substring(0, 8) + '...)' : '未设置');
+    console.log('API Key:', '已设置(前8位:' + GEMINI_API_KEY.substring(0, 8) + '...)');
     console.log('提示词长度:', prompt.length);
     
     // 详细的系统提示
