@@ -1,3 +1,26 @@
+// 农历转换（简化版）
+function getLunarDate() {
+    const now = new Date();
+    // 简化的农历月份和日期数组（实际应用需要更精确的农历算法）
+    const lunarMonths = ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊'];
+    const lunarDays = ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+                       '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+                       '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+    
+    // 使用简化计算（实际应用中应使用专业农历库）
+    // 这里返回一个近似值，以公历日期为基础偏移
+    const month = now.getMonth();
+    const day = now.getDate();
+    
+    // 简化处理：农历通常比公历晚约1个月
+    let lunarMonth = month; // 简化处理
+    let lunarDay = day - 1;
+    if (lunarDay < 0) lunarDay = 0;
+    if (lunarDay > 29) lunarDay = 29;
+    
+    return `${lunarMonths[lunarMonth]}月${lunarDays[lunarDay]}`;
+}
+
 // 增删卜易地支配置表（按八宫排列）
 const zengShanBuYiConfig = {
     // 乾宫地支序列（金宫）
@@ -870,6 +893,28 @@ startBtn.addEventListener('click', startDivination);
 throwBtn.addEventListener('click', throwCoins);
 resetBtn.addEventListener('click', reset);
 
+// 复制AI提示按钮事件
+const copyPromptBtn = document.getElementById('copyPromptBtn');
+if (copyPromptBtn) {
+    copyPromptBtn.addEventListener('click', function() {
+        const aiPromptBox = document.getElementById('aiPromptBox');
+        if (aiPromptBox && aiPromptBox.textContent) {
+            navigator.clipboard.writeText(aiPromptBox.textContent).then(() => {
+                const originalText = copyPromptBtn.textContent;
+                copyPromptBtn.textContent = '已复制！';
+                copyPromptBtn.style.backgroundColor = '#28a745';
+                setTimeout(() => {
+                    copyPromptBtn.textContent = originalText;
+                    copyPromptBtn.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动选择文本复制');
+            });
+        }
+    });
+}
+
 // 开始算卦
 function startDivination() {
     currentStep = 0;
@@ -1077,6 +1122,74 @@ function showGuaResult() {
         const isMoving = yaos[i].isMoving ? '（动）' : '';
         const newValue = yaos[i].isMoving ? (yaos[i].value === 1 ? '阴' : '阳') : yaoType;
         console.log(`  ${yaoName}: ${yaoType}${isMoving} → 新卦: ${newValue}`);
+    }
+    
+    // 生成AI解卦提示
+    generateAIPrompt(initialGuaInfo, newGuaInfo, yaos, movingYaoPositions);
+}
+
+// 生成AI解卦提示
+function generateAIPrompt(initialGuaInfo, newGuaInfo, yaos, movingYaoPositions) {
+    const aiPromptBox = document.getElementById('aiPromptBox');
+    const copyPromptBtn = document.getElementById('copyPromptBtn');
+    if (!aiPromptBox) return;
+    
+    // 获取问题
+    const questionText = selectedQuestion || '未指定问题';
+    
+    // 获取农历日期
+    const lunarDate = getLunarDate();
+    
+    // 爻位名称映射
+    const yaoNames = ['初', '二', '三', '四', '五', '上'];
+    
+    // 构建动爻描述
+    let movingYaoDesc = '';
+    let changedYaoDesc = '';
+    
+    if (movingYaoPositions.length > 0) {
+        // 动爻位置和变化方向
+        const movingDetails = movingYaoPositions.map(pos => {
+            const idx = pos - 1;
+            const originalType = yaos[idx].value === 1 ? '阳' : '阴';
+            const newType = yaos[idx].value === 1 ? '阴' : '阳';
+            return `第${pos}爻（${originalType}变${newType}）`;
+        });
+        movingYaoDesc = `动爻是${movingDetails.join('、')}`;
+        
+        // 变后的六亲、地支、五行信息（使用本卦宫位五行计算）
+        const palaceWuxing = initialGuaInfo.wuxing;
+        const changedDetails = movingYaoPositions.map(pos => {
+            const idx = pos - 1;
+            const yaoName = yaoNames[idx];
+            // 变后的爻在变卦中的五行
+            const changedWuxing = newGuaInfo.wuxingYao[idx];
+            const changedDizhi = newGuaInfo.dizhi[idx];
+            // 使用本卦宫位五行计算变后爻的六亲
+            const changedLiuqin = calculateLiuqin(palaceWuxing, changedWuxing);
+            return `${yaoName}爻变后是${changedLiuqin}${changedDizhi}${changedWuxing}`;
+        });
+        changedYaoDesc = changedDetails.join('，');
+    }
+    
+    // 组装提示词
+    let prompt = `我要问"${questionText}"的问题：\n`;
+    prompt += `在农历${lunarDate}起卦，得到${initialGuaInfo.name}（${initialGuaInfo.palace}，属${initialGuaInfo.wuxing}）为本卦`;
+    
+    if (movingYaoPositions.length > 0) {
+        prompt += `，${movingYaoDesc}，变卦后是${newGuaInfo.name}。`;
+        prompt += `\n${changedYaoDesc}。`;
+    } else {
+        prompt += `，无动爻（静卦）。`;
+    }
+    
+    prompt += `\n\n请帮忙用增删卜易推算此卦的吉凶好坏。`;
+    
+    // 显示提示词
+    aiPromptBox.textContent = prompt;
+    aiPromptBox.style.display = 'block';
+    if (copyPromptBtn) {
+        copyPromptBtn.style.display = 'inline-block';
     }
 }
 
