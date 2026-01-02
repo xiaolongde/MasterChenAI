@@ -42,12 +42,37 @@
                 <label for="questionSelect">请选择您要询问的问题：</label>
                 <select id="questionSelect">
                     <option value="">请选择问题...</option>
-                    <option value="1">入职新公司是否有利</option>
-                    <option value="2">跟人合作是否有利</option>
-                    <option value="3">投资新生意是否有利</option>
-                    <option value="4">交新的女朋友是否合得来</option>
-                    <option value="5">父亲生病了，这个病能好吗？</option>
-                    <option value="6">去北方旅游是否顺利</option>
+                    <optgroup label="健康类">
+                        <option value="疾病什么时候能痊愈">疾病什么时候能痊愈</option>
+                        <option value="算其他人身体什么时候能痊愈">算其他人身体什么时候能痊愈</option>
+                        <option value="明年身体健康状况">明年身体健康状况</option>
+                        <option value="父亲生病了，这个病能好吗？">父亲生病了，这个病能好吗？</option>
+                    </optgroup>
+                    <optgroup label="事业类">
+                        <option value="升职机遇">升职机遇</option>
+                        <option value="适合创业或换工作吗">适合创业或换工作吗</option>
+                        <option value="怎么选择工作方向">怎么选择工作方向</option>
+                        <option value="入职新公司是否有利">入职新公司是否有利</option>
+                        <option value="跟人合作是否有利">跟人合作是否有利</option>
+                        <option value="投资新生意是否有利">投资新生意是否有利</option>
+                    </optgroup>
+                    <optgroup label="财运">
+                        <option value="最近三个月财运怎么样">最近三个月财运怎么样</option>
+                        <option value="未来一年财运怎样">未来一年财运怎样</option>
+                        <option value="什么时候有财运">什么时候有财运</option>
+                    </optgroup>
+                    <optgroup label="感情">
+                        <option value="什么时候有桃花运">什么时候有桃花运</option>
+                        <option value="算和某某是否合适在一起">算和某某是否合适在一起</option>
+                        <option value="什么时候适合结婚">什么时候适合结婚</option>
+                        <option value="交新的女朋友是否合得来">交新的女朋友是否合得来</option>
+                    </optgroup>
+                    <optgroup label="姻缘">
+                        <option value="什么时候能结婚">什么时候能结婚</option>
+                        <option value="找哪一年的对象合适">找哪一年的对象合适</option>
+                    </optgroup>
+                </select>
+                <button id="startBtn" class="btn-primary" disabled>开始算卦</button>
                 </select>
                 <button id="startBtn" class="btn-primary" disabled>开始算卦</button>
             </div>
