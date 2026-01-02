@@ -104,92 +104,6 @@ function getLunarDate() {
     return `${monthGanZhi}月${dayGanZhi}日`;
 }
 
-// 增删卜易地支配置表（按八宫排列）
-const zengShanBuYiConfig = {
-    // 乾宫地支序列（金宫）
-    '乾宫': {
-        wuxing: '金',
-        dizhi: ['子', '寅', '辰', '午', '申', '戌'] // 从初爻到上爻
-    },
-    // 兑宫地支序列（金宫）  
-    '兑宫': {
-        wuxing: '金',
-        dizhi: ['巳', '卯', '丑', '亥', '酉', '未'] // 从初爻到上爻
-    },
-    // 离宫地支序列（火宫）
-    '离宫': {
-        wuxing: '火', 
-        dizhi: ['卯', '丑', '亥', '酉', '未', '巳'] // 从初爻到上爻
-    },
-    // 震宫地支序列（木宫）
-    '震宫': {
-        wuxing: '木',
-        dizhi: ['子', '寅', '辰', '午', '申', '戌'] // 从初爻到上爻
-    },
-    // 巽宫地支序列（木宫）
-    '巽宫': {
-        wuxing: '木',
-        dizhi: ['丑', '亥', '酉', '未', '巳', '卯'] // 从初爻到上爻
-    },
-    // 坎宫地支序列（水宫）
-    '坎宫': {
-        wuxing: '水',
-        dizhi: ['寅', '辰', '午', '申', '戌', '子'] // 从初爻到上爻
-    },
-    // 艮宫地支序列（土宫）
-    '艮宫': {
-        wuxing: '土',
-        dizhi: ['辰', '午', '申', '戌', '子', '寅'] // 从初爻到上爻
-    },
-    // 坤宫地支序列（土宫）
-    '坤宫': {
-        wuxing: '土',
-        dizhi: ['未', '巳', '卯', '丑', '亥', '酉'] // 从初爻到上爻
-    }
-};
-
-// 地支对应五行表
-const dizhiWuxingMap = {
-    '子': '水', '亥': '水',
-    '寅': '木', '卯': '木', 
-    '巳': '火', '午': '火',
-    '申': '金', '酉': '金',
-    '辰': '土', '戌': '土', '丑': '土', '未': '土'
-};
-
-// 根据宫位获取正确的地支和五行配置
-function getCorrectGuaConfig(palace) {
-    const config = zengShanBuYiConfig[palace];
-    if (!config) return null;
-    
-    // 根据地支计算五行
-    const wuxingYao = config.dizhi.map(dizhi => dizhiWuxingMap[dizhi]);
-    
-    return {
-        palace: palace,
-        wuxing: config.wuxing,
-        dizhi: config.dizhi,
-        wuxingYao: wuxingYao
-    };
-}
-
-// 动态修正卦象配置
-function getCorrectGuaInfo(guaCode, originalGuaInfo) {
-    if (!originalGuaInfo || !originalGuaInfo.palace) return originalGuaInfo;
-    
-    const correctConfig = getCorrectGuaConfig(originalGuaInfo.palace);
-    if (!correctConfig) return originalGuaInfo;
-    
-    // 返回修正后的卦象信息
-    return {
-        ...originalGuaInfo,
-        wuxing: correctConfig.wuxing,
-        dizhi: correctConfig.dizhi,
-        wuxingYao: correctConfig.wuxingYao,
-        get liuqin() { return calculateAllLiuqin(this.wuxing, this.wuxingYao); }
-    };
-}
-
 // 根据宫的五行和爻的五行计算六亲
 function calculateLiuqin(palaceWuxing, yaoWuxing) {
     // 五行相生关系：key生value
@@ -1571,9 +1485,7 @@ function showGuaResult() {
     
     // 显示初始卦
     displayGua('initialGua', initialGuaCode, yaos);
-    let initialGuaInfo = guaData[initialGuaCode] || { name: '未知卦', info: `卦象信息待补充（卦码：${initialGuaCode}）`, palace: '未知宫' };
-    // 使用增删卜易标准配置修正卦象信息
-    initialGuaInfo = getCorrectGuaInfo(initialGuaCode, initialGuaInfo);
+    const initialGuaInfo = guaData[initialGuaCode] || { name: '未知卦', info: `卦象信息待补充（卦码：${initialGuaCode}）`, palace: '未知宫', wuxing: '未知' };
     document.getElementById('initialGuaName').textContent = `${initialGuaInfo.name}（${initialGuaInfo.wuxing}）`;
     document.getElementById('initialGuaInfo').textContent = initialGuaInfo.info;
     
@@ -1582,13 +1494,11 @@ function showGuaResult() {
     
     // 显示新卦
     displayGua('newGua', newGuaCode, yaos, true);
-    let newGuaInfo = guaData[newGuaCode] || { name: '未知卦', info: `卦象信息待补充（卦码：${newGuaCode}）`, palace: '未知宫' };
-    // 使用增删卜易标准配置修正卦象信息
-    newGuaInfo = getCorrectGuaInfo(newGuaCode, newGuaInfo);
-    document.getElementById('newGuaName').textContent = `${newGuaInfo.name}（${initialGuaInfo.wuxing}）`;
+    const newGuaInfo = guaData[newGuaCode] || { name: '未知卦', info: `卦象信息待补充（卦码：${newGuaCode}）`, palace: '未知宫', wuxing: '未知' };
+    document.getElementById('newGuaName').textContent = `${newGuaInfo.name}（${newGuaInfo.wuxing}）`;
     document.getElementById('newGuaInfo').textContent = newGuaInfo.info;
     
-    // 显示新卦的详细信息（变卦的六亲按本卦宫位五行计算）
+    // 显示新卦的详细信息（变爻用本卦宫位五行计算六亲，其他爻用变卦自己的六亲）
     displayGuaDetails('newGuaDetails', newGuaCode, newGuaInfo, yaos, true, initialGuaInfo.wuxing);
     
     // 调试信息（可在控制台查看）
@@ -1773,18 +1683,24 @@ function displayGuaDetails(elementId, guaCode, guaInfo, yaos, isNewGua = false, 
     }
     
     // 计算六亲关系
-    // 变卦时使用本卦的宫位五行来计算六亲
-    const palaceWuxingForLiuqin = isNewGua && initialPalaceWuxing ? initialPalaceWuxing : guaInfo.wuxing;
     let liuqinArray = [];
-    if (!isNewGua && guaInfo.liuqin && Array.isArray(guaInfo.liuqin)) {
-        // 本卦：如果已有六亲数组，直接使用
-        liuqinArray = guaInfo.liuqin;
-    } else if (palaceWuxingForLiuqin && guaInfo.wuxingYao) {
-        // 变卦或需要计算：用本卦宫位五行计算六亲关系
-        liuqinArray = calculateAllLiuqin(palaceWuxingForLiuqin, guaInfo.wuxingYao);
+    if (!isNewGua) {
+        // 本卦：直接使用guaData中的六亲
+        liuqinArray = guaInfo.liuqin || calculateAllLiuqin(guaInfo.wuxing, guaInfo.wuxingYao);
     } else {
-        // 使用默认值
-        liuqinArray = ['', '', '', '', '', ''];
+        // 变卦：变爻用本卦五行算六亲，其他爻用变卦自己的六亲
+        const newGuaLiuqin = guaInfo.liuqin || calculateAllLiuqin(guaInfo.wuxing, guaInfo.wuxingYao);
+        liuqinArray = newGuaLiuqin.slice(); // 复制一份
+        
+        // 只有动爻位置用本卦宫位五行重新计算六亲
+        if (initialPalaceWuxing && yaos) {
+            for (let i = 0; i < 6; i++) {
+                if (yaos[i] && yaos[i].isMoving) {
+                    // 这个位置是动爻，用本卦宫位五行计算六亲
+                    liuqinArray[i] = calculateLiuqin(initialPalaceWuxing, guaInfo.wuxingYao[i]);
+                }
+            }
+        }
     }
     
     // 按爻位显示详细信息（从下往上：初爻到上爻）
@@ -1814,13 +1730,13 @@ function displayGuaDetails(elementId, guaCode, guaInfo, yaos, isNewGua = false, 
         const isYing = (guaInfo.ying - 1) === yaoIndex ? ' —— 应' : '';
         const yaoPosition = yaoNames[yaoIndex] + '爻';
         
-        // 检查是否为动爻
-        const isMovingYao = yaos && yaos[yaoIndex] && yaos[yaoIndex].isMoving;
+        // 检查是否为动爻（只在本卦中标记动爻，变卦不标记）
+        const isMovingYao = !isNewGua && yaos && yaos[yaoIndex] && yaos[yaoIndex].isMoving;
         
         // 格式：爻位：六亲+地支+五行+世/应
         yaoItem.textContent = `${yaoPosition}：${liuqin}${dizhi}${wuxing}${isShi}${isYing}`;
         
-        // 动爻标红显示
+        // 动爻标红显示（仅本卦）
         if (isMovingYao) {
             yaoItem.style.color = '#ff4444';
             yaoItem.style.fontWeight = 'bold';
